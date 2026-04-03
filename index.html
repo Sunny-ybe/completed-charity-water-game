@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Water Quest – charity: water</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --yellow: #FFC907;
+      --yellow-dark: #e6b400;
+      --navy: #1a2744;
+      --navy-light: #243660;
+      --white: #ffffff;
+      --red: #e63946;
+      --brown: #8B5E3C;
+      --green: #2dc653;
+      --gray: #f0f4f8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--navy);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px;
+      overflow-x: hidden;
+    }
+
+    /* ── HEADER ── */
+    header {
+      width: 100%;
+      max-width: 600px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .logo-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-can {
+      width: 36px;
+      height: 44px;
+    }
+
+    .brand-name {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.1;
+    }
+
+    .brand-name span:first-child {
+      color: var(--yellow);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .brand-name span:last-child {
+      color: var(--white);
+      font-size: 18px;
+      font-weight: 900;
+    }
+
+    .tagline {
+      color: rgba(255,255,255,0.5);
+      font-size: 11px;
+      text-align: right;
+    }
+
+    /* ── HUD ── */
+    .hud {
+      width: 100%;
+      max-width: 600px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--navy-light);
+      border-radius: 16px;
+      padding: 14px 20px;
+      margin-bottom: 12px;
+      gap: 8px;
+    }
+
+    .hud-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .hud-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 2px;
+    }
+
+    .hud-value {
+      font-size: 28px;
+      font-weight: 900;
+      color: var(--white);
+      line-height: 1;
+    }
+
+    .hud-value.score { color: var(--yellow); }
+    .hud-value.timer { color: var(--white); }
+    .hud-value.timer.urgent { color: var(--red); animation: pulse 0.5s infinite alternate; }
+
+    @keyframes pulse { to { transform: scale(1.1); } }
+
+    /* ── FEEDBACK BAR ── */
+    .feedback {
+      width: 100%;
+      max-width: 600px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 10px;
+      transition: color 0.2s;
+      min-height: 28px;
+    }
+
+    /* ── GRID ── */
+    .grid-wrapper {
+      width: 100%;
+      max-width: 600px;
+      background: var(--navy-light);
+      border-radius: 20px;
+      padding: 16px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .cell {
+      aspect-ratio: 1;
+      background: rgba(255,255,255,0.06);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: background 0.15s, transform 0.1s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .cell:hover { background: rgba(255,255,255,0.1); }
+    .cell:active { transform: scale(0.93); }
+
+    /* Can SVG inside cell */
+    .cell svg {
+      width: 62%;
+      height: 62%;
+      transition: transform 0.12s, opacity 0.15s;
+    }
+
+    .cell.empty svg { opacity: 0; transform: scale(0.5) translateY(20px); }
+    .cell.active svg { opacity: 1; transform: scale(1) translateY(0); }
+
+    .cell.hit-good { background: rgba(255,201,7,0.3); }
+    .cell.hit-bad  { background: rgba(230,57,70,0.3); }
+
+    /* ── CONTROLS ── */
+    .controls {
+      width: 100%;
+      max-width: 600px;
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 15px;
+      font-weight: 900;
+      cursor: pointer;
+      transition: transform 0.1s, filter 0.1s;
+      letter-spacing: 0.5px;
+    }
+
+    .btn:active { transform: scale(0.96); }
+
+    .btn-primary {
+      background: var(--yellow);
+      color: var(--navy);
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.1);
+      color: var(--white);
+    }
+
+    .btn:hover { filter: brightness(1.1); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ── LEGEND ── */
+    .legend {
+      width: 100%;
+      max-width: 600px;
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      margin-top: 12px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: rgba(255,255,255,0.55);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+    }
+
+    /* ── OVERLAY (start / win / lose) ── */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(10,15,40,0.92);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .overlay.hidden { display: none; }
+
+    .overlay-icon { font-size: 64px; margin-bottom: 12px; }
+
+    .overlay h1 {
+      color: var(--yellow);
+      font-size: 32px;
+      font-weight: 900;
+      margin-bottom: 10px;
+    }
+
+    .overlay p {
+      color: rgba(255,255,255,0.8);
+      font-size: 15px;
+      max-width: 340px;
+      margin-bottom: 24px;
+      line-height: 1.6;
+    }
+
+    .overlay-score {
+      font-size: 56px;
+      font-weight: 900;
+      color: var(--white);
+      margin: 8px 0 20px;
+    }
+
+    /* ── CONFETTI ── */
+    #confetti-canvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 200;
+    }
+
+    /* ── PROGRESS BAR ── */
+    .progress-wrap {
+      width: 100%;
+      max-width: 600px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 99px;
+      height: 8px;
+      margin-bottom: 10px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: var(--yellow);
+      border-radius: 99px;
+      transition: width 0.3s;
+    }
+
+    .goal-label {
+      width: 100%;
+      max-width: 600px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: rgba(255,255,255,0.4);
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 400px) {
+      .hud-value { font-size: 22px; }
+      .brand-name span:last-child { font-size: 15px; }
+    }
+
+    @media (min-width: 601px) {
+      .grid { gap: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- CONFETTI CANVAS -->
+<canvas id="confetti-canvas"></canvas>
+
+<!-- START OVERLAY -->
+<div class="overlay" id="start-overlay">
+  <div class="overlay-icon">💧</div>
+  <h1>Water Quest</h1>
+  <p>Tap the <strong style="color:var(--yellow)">yellow jerry cans</strong> to collect clean water.<br>
+  Avoid the <strong style="color:#8B5E3C">dirty brown cans</strong> — they cost you points!<br><br>
+  Reach <strong style="color:var(--yellow)">20 points</strong> to provide water for a family.</p>
+  <button class="btn btn-primary" onclick="startGame()" style="max-width:240px;width:100%">Start Mission</button>
+</div>
+
+<!-- WIN OVERLAY -->
+<div class="overlay hidden" id="win-overlay">
+  <div class="overlay-icon">🎉</div>
+  <h1>Mission Complete!</h1>
+  <div class="overlay-score" id="win-score">0</div>
+  <p>You helped provide clean water!<br>Every drop counts with charity: water.</p>
+  <button class="btn btn-primary" onclick="resetGame()" style="max-width:240px;width:100%">Play Again</button>
+</div>
+
+<!-- LOSE OVERLAY -->
+<div class="overlay hidden" id="lose-overlay">
+  <div class="overlay-icon">⏱️</div>
+  <h1>Time's Up!</h1>
+  <div class="overlay-score" id="lose-score">0</div>
+  <p>You needed 20 points. Keep trying — every effort brings clean water closer.</p>
+  <button class="btn btn-primary" onclick="resetGame()" style="max-width:240px;width:100%">Try Again</button>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="logo-group">
+    <!-- charity: water jerry can SVG -->
+    <svg class="logo-can" viewBox="0 0 36 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="6" y="10" width="24" height="30" rx="4" fill="#FFC907"/>
+      <rect x="13" y="5" width="10" height="7" rx="2" fill="#FFC907"/>
+      <rect x="15" y="3" width="6" height="4" rx="1" fill="#e6b400"/>
+      <rect x="9" y="17" width="18" height="3" rx="1.5" fill="#e6b400"/>
+      <ellipse cx="18" cy="32" rx="5" ry="5" fill="#fff" fill-opacity="0.2"/>
+    </svg>
+    <div class="brand-name">
+      <span>charity:</span>
+      <span>Water Quest</span>
+    </div>
+  </div>
+  <div class="tagline">clean water<br>for everyone</div>
+</header>
+
+<!-- HUD -->
+<div class="hud">
+  <div class="hud-item">
+    <div class="hud-label">Score</div>
+    <div class="hud-value score" id="score-display">0</div>
+  </div>
+  <div class="hud-item">
+    <div class="hud-label">Goal</div>
+    <div class="hud-value" style="color:var(--yellow);font-size:20px">20 pts</div>
+  </div>
+  <div class="hud-item">
+    <div class="hud-label">Time</div>
+    <div class="hud-value timer" id="timer-display">60</div>
+  </div>
+</div>
+
+<!-- PROGRESS -->
+<div class="goal-label">
+  <span>Progress to clean water</span>
+  <span id="progress-label">0 / 20</span>
+</div>
+<div class="progress-wrap">
+  <div class="progress-bar" id="progress-bar" style="width:0%"></div>
+</div>
+
+<!-- FEEDBACK -->
+<div class="feedback" id="feedback">Tap the yellow jerry cans!</div>
+
+<!-- GRID -->
+<div class="grid-wrapper">
+  <div class="grid" id="game-grid"></div>
+</div>
+
+<!-- CONTROLS -->
+<div class="controls">
+  <button class="btn btn-primary" id="start-btn" onclick="startGame()" disabled>Start</button>
+  <button class="btn btn-secondary" id="reset-btn" onclick="resetGame()">Reset</button>
+</div>
+
+<!-- LEGEND -->
+<div class="legend">
+  <div class="legend-item">
+    <div class="legend-dot" style="background:var(--yellow)"></div>
+    Clean can +1
+  </div>
+  <div class="legend-item">
+    <div class="legend-dot" style="background:#8B5E3C"></div>
+    Dirty can −1
+  </div>
+</div>
+
+<script>
+  // ── CONFIG ──
+  const GRID_SIZE   = 9;      // 3×3
+  const GOAL        = 20;
+  const GAME_TIME   = 60;     // seconds
+  const CAN_SPEED   = 900;    // ms each can stays visible
+  const SPAWN_RATE  = 700;    // ms between spawns
+  const DIRTY_CHANCE = 0.28;  // 28% of spawns are dirty
+
+  // ── STATE ──
+  let score = 0;
+  let timeLeft = GAME_TIME;
+  let running = false;
+  let spawnTimer = null;
+  let countdownTimer = null;
+  let cellTimers = [];
+
+  // ── ELEMENTS ──
+  const grid          = document.getElementById('game-grid');
+  const scoreDisplay  = document.getElementById('score-display');
+  const timerDisplay  = document.getElementById('timer-display');
+  const feedback      = document.getElementById('feedback');
+  const progressBar   = document.getElementById('progress-bar');
+  const progressLabel = document.getElementById('progress-label');
+
+  // ── BUILD GRID ──
+  const cells = [];
+  for (let i = 0; i < GRID_SIZE; i++) {
+    const cell = document.createElement('div');
+    cell.className = 'cell empty';
+    cell.dataset.index = i;
+    cell.innerHTML = cleanCanSVG('#FFC907');
+    cell.addEventListener('click', () => onCellClick(i));
+    grid.appendChild(cell);
+    cells.push({ el: cell, dirty: false, active: false });
+  }
+
+  function cleanCanSVG(color) {
+    return `<svg viewBox="0 0 60 80" xmlns="http://www.w3.org/2000/svg">
+      <rect x="8" y="22" width="44" height="54" rx="8" fill="${color}"/>
+      <rect x="20" y="10" width="20" height="14" rx="4" fill="${color}"/>
+      <rect x="24" y="4" width="12" height="8" rx="3" fill="${color === '#FFC907' ? '#e6b400' : '#6b4020'}"/>
+      <rect x="12" y="34" width="36" height="6" rx="3" fill="${color === '#FFC907' ? '#e6b400' : '#6b4020'}"/>
+      <ellipse cx="30" cy="58" rx="10" ry="10" fill="white" fill-opacity="0.18"/>
+      <text x="30" y="64" text-anchor="middle" font-size="14" fill="white" font-family="Nunito,sans-serif" font-weight="900">${color === '#FFC907' ? '💧' : '🤢'}</text>
+    </svg>`;
+  }
+
+  // ── GAME FLOW ──
+  function startGame() {
+    document.getElementById('start-overlay').classList.add('hidden');
+    document.getElementById('win-overlay').classList.add('hidden');
+    document.getElementById('lose-overlay').classList.add('hidden');
+
+    score = 0;
+    timeLeft = GAME_TIME;
+    running = true;
+    updateHUD();
+    setFeedback('Collect the clean cans! 💧', 'white');
+
+    // start timers
+    spawnTimer = setInterval(spawnCan, SPAWN_RATE);
+    countdownTimer = setInterval(tick, 1000);
+
+    document.getElementById('start-btn').disabled = true;
+  }
+
+  function tick() {
+    timeLeft--;
+    updateHUD();
+    if (timeLeft <= 10) {
+      timerDisplay.classList.add('urgent');
+    }
+    if (timeLeft <= 0) endGame(false);
+  }
+
+  function spawnCan() {
+    if (!running) return;
+    // pick a random empty cell
+    const empty = cells.filter(c => !c.active);
+    if (empty.length === 0) return;
+    const chosen = empty[Math.floor(Math.random() * empty.length)];
+    const dirty = Math.random() < DIRTY_CHANCE;
+    showCan(chosen, dirty);
+  }
+
+  function showCan(cell, dirty) {
+    cell.dirty = dirty;
+    cell.active = true;
+    cell.el.innerHTML = dirty ? cleanCanSVG('#8B5E3C') : cleanCanSVG('#FFC907');
+    cell.el.classList.remove('empty', 'hit-good', 'hit-bad');
+    cell.el.classList.add('active');
+
+    // auto-hide after CAN_SPEED ms if not clicked
+    const t = setTimeout(() => {
+      hideCan(cell);
+    }, CAN_SPEED);
+    cell._timer = t;
+  }
+
+  function hideCan(cell) {
+    cell.active = false;
+    cell.el.classList.remove('active', 'hit-good', 'hit-bad');
+    cell.el.classList.add('empty');
+  }
+
+  function onCellClick(i) {
+    if (!running) return;
+    const cell = cells[i];
+    if (!cell.active) return;
+
+    clearTimeout(cell._timer);
+
+    if (cell.dirty) {
+      // penalty
+      score = Math.max(0, score - 1);
+      cell.el.classList.add('hit-bad');
+      setFeedback('Dirty water! −1 point 🤢', '#e63946');
+    } else {
+      // good
+      score++;
+      cell.el.classList.add('hit-good');
+      if (score % 5 === 0) {
+        setFeedback(`${score} points! You're saving lives! 🌍`, '#2dc653');
+      } else {
+        setFeedback('+1 Clean water collected! 💧', '#FFC907');
+      }
+    }
+
+    updateHUD();
+    setTimeout(() => hideCan(cell), 150);
+
+    if (score >= GOAL) endGame(true);
+  }
+
+  function endGame(won) {
+    running = false;
+    clearInterval(spawnTimer);
+    clearInterval(countdownTimer);
+    timerDisplay.classList.remove('urgent');
+    cells.forEach(c => hideCan(c));
+
+    if (won) {
+      document.getElementById('win-score').textContent = score + ' pts';
+      document.getElementById('win-overlay').classList.remove('hidden');
+      launchConfetti();
+    } else {
+      document.getElementById('lose-score').textContent = score + ' pts';
+      document.getElementById('lose-overlay').classList.remove('hidden');
+    }
+  }
+
+  function resetGame() {
+    running = false;
+    clearInterval(spawnTimer);
+    clearInterval(countdownTimer);
+    timerDisplay.classList.remove('urgent');
+    cells.forEach(c => hideCan(c));
+
+    score = 0;
+    timeLeft = GAME_TIME;
+    updateHUD();
+    setFeedback('Tap Start to begin your mission! 💧', 'white');
+
+    document.getElementById('start-overlay').classList.remove('hidden');
+    document.getElementById('win-overlay').classList.add('hidden');
+    document.getElementById('lose-overlay').classList.add('hidden');
+    document.getElementById('start-btn').disabled = false;
+
+    stopConfetti();
+  }
+
+  function updateHUD() {
+    scoreDisplay.textContent = score;
+    timerDisplay.textContent = timeLeft;
+    const pct = Math.min((score / GOAL) * 100, 100);
+    progressBar.style.width = pct + '%';
+    progressLabel.textContent = `${score} / ${GOAL}`;
+  }
+
+  function setFeedback(msg, color) {
+    feedback.textContent = msg;
+    feedback.style.color = color || 'white';
+  }
+
+  // ── CONFETTI ──
+  const canvas = document.getElementById('confetti-canvas');
+  const ctx    = canvas.getContext('2d');
+  let confettiParticles = [];
+  let confettiRunning = false;
+  let confettiRAF;
+
+  const CONFETTI_COLORS = ['#FFC907','#2dc653','#ffffff','#1a2744','#e63946'];
+
+  function launchConfetti() {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+    confettiParticles = [];
+    for (let i = 0; i < 140; i++) {
+      confettiParticles.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * -canvas.height * 0.5,
+        w: 8 + Math.random() * 8,
+        h: 6 + Math.random() * 6,
+        color: CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
+        speed: 2 + Math.random() * 4,
+        angle: Math.random() * Math.PI * 2,
+        spin: (Math.random() - 0.5) * 0.15,
+        drift: (Math.random() - 0.5) * 1.5
+      });
+    }
+    confettiRunning = true;
+    animateConfetti();
+  }
+
+  function animateConfetti() {
+    if (!confettiRunning) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    confettiParticles.forEach(p => {
+      p.y     += p.speed;
+      p.x     += p.drift;
+      p.angle += p.spin;
+
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.angle);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      ctx.restore();
+    });
+    confettiParticles = confettiParticles.filter(p => p.y < canvas.height + 20);
+    if (confettiParticles.length > 0) {
+      confettiRAF = requestAnimationFrame(animateConfetti);
+    } else {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+  }
+
+  function stopConfetti() {
+    confettiRunning = false;
+    cancelAnimationFrame(confettiRAF);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    confettiParticles = [];
+  }
+
+  window.addEventListener('resize', () => {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+  });
+</script>
+</body>
+</html>
